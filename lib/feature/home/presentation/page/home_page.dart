@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ina17_test/core/common/logger.dart';
+import 'package:ina17_test/core/common/navigation.dart';
+import 'package:ina17_test/core/common/routes.dart';
 import 'package:ina17_test/core/theme/style.dart';
 import 'package:ina17_test/core/widget/button/default_button.dart';
 
@@ -156,6 +158,13 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {
               // go to add input page
               Logger.print('go to add_input_page');
+              // nav keinput page
+              // Navigator.pushNamed(context, Routes.takePhotoPage,
+              //     arguments: data);
+              navigatorKey.currentState?.pushNamed(
+                Routes.takePhotoPage,
+                // arguments: data,
+              );
             },
             // showLoading: state is SelfSummarySaveLoading,
             label: 'Add Input',
