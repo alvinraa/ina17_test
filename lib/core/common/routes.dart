@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ina17_test/feature/home/presentation/home_page.dart';
+import 'package:ina17_test/feature/home/presentation/page/home_page.dart';
 import 'package:ina17_test/feature/testing/testing_page.dart';
 
 class Routes {
