@@ -18,6 +18,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
   XFile? pickedImage;
   String textFromImage = '';
   bool scanning = false;
+  bool isTextConvertSuccess = false;
   int calcResult = 0;
 
   final ImagePicker _imagePicker = ImagePicker();
@@ -40,6 +41,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
   performceTextRecognition() async {
     setState(() {
       scanning = true;
+      isTextConvertSuccess = false;
     });
     try {
       if (pickedImage?.path != null) {
@@ -57,12 +59,19 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
           textFromImage = recognizedText.text;
           calculate(textFromImage);
           scanning = false;
+          isTextConvertSuccess = true;
         });
 
         textRecognizer.close();
       }
     } catch (e) {
       Logger.print('error during text recognition : $e');
+      setState(() {
+        isTextConvertSuccess = false;
+        scanning = false;
+        textFromImage =
+            'error when process image to text, please try again with another image';
+      });
     }
   }
 
@@ -70,7 +79,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
   // example : 1+1, 2-2, 3*3, 4:2
   int calculate(String s) {
     // Split string based on the operators
-    List<String> numbers = s.split(RegExp(r'[\+\-\*\/]'));
+    List<String> numbers = s.split(RegExp(r'[\+\-\*\/\x\:]'));
 
     // Get the operator
     String operator = s.replaceAll(RegExp(r'[0-9]'), '');
@@ -82,12 +91,12 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
     // Perform the operation based on the operator
     switch (operator) {
       case '+':
-        return calcResult = num1 + num2;
+        return calcResult = num1 + num2; // penambahan
       case '-':
-        return calcResult = num1 - num2;
-      case '*':
-        return calcResult = num1 * num2;
-      case '/':
+        return calcResult = num1 - num2; // pengurangan
+      case '*' || 'x':
+        return calcResult = num1 * num2; // perkalian
+      case '/' || ':':
         return calcResult = num1 ~/ num2; // pembagian Integer
       default:
         throw Exception('Invalid operator');
@@ -182,29 +191,53 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
               ),
               pickedImage == null
                   ? Container()
-                  : Container(
-                      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 24,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorScheme.onPrimary,
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '$textFromImage = $calcResult',
-                        softWrap: true,
-                        style: GoogleFonts.lato(
-                          textStyle: textTheme.labelLarge?.copyWith(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                            color: colorScheme.secondary,
+                  : isTextConvertSuccess == true
+                      ? Container(
+                          margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 24,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.onPrimary,
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$textFromImage = $calcResult',
+                            softWrap: true,
+                            style: GoogleFonts.lato(
+                              textStyle: textTheme.labelLarge?.copyWith(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                color: colorScheme.secondary,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 24,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.onPrimary,
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            textFromImage,
+                            softWrap: true,
+                            style: GoogleFonts.lato(
+                              textStyle: textTheme.labelLarge?.copyWith(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                color: colorScheme.secondary,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    )
             ],
           ),
         ),
