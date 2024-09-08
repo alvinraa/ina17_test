@@ -6,6 +6,7 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:image_picker/image_picker.dart';
 import 'package:ina17_test/core/common/logger.dart';
 import 'package:ina17_test/core/widget/button/default_button.dart';
+import 'package:ina17_test/feature/home/data/model/result_model.dart';
 
 class TakePhotoPage extends StatefulWidget {
   const TakePhotoPage({super.key});
@@ -105,15 +106,43 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Theme.of(context).colorScheme.onPrimary,
-        title: const Text(
-          'Take Photo',
+    return
+        // have some issue with PopScope
+        // PopScope(
+        //   onPopInvoked: (didPop) {
+        // if (isTextConvertSuccess == true) {
+        //   ResultModel resultModel = ResultModel();
+        //   resultModel.input = textFromImage;
+        //   resultModel.result = calcResult.toString();
+
+        //   Navigator.pop(context, resultModel);
+        // }
+        //   },
+        WillPopScope(
+      onWillPop: () async {
+        // Data yang ingin dikirim saat pengguna menekan tombol "Back"
+        if (isTextConvertSuccess == true) {
+          ResultModel resultModel = ResultModel();
+          resultModel.input = textFromImage;
+          resultModel.result = calcResult.toString();
+
+          Navigator.pop(context, resultModel);
+        } else {
+          Navigator.pop(context);
+        }
+
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Theme.of(context).colorScheme.onPrimary,
+          title: const Text(
+            'Image to Text',
+          ),
         ),
+        body: buildContent(context),
       ),
-      body: buildContent(context),
     );
   }
 

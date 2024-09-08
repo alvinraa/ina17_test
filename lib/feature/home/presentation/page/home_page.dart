@@ -5,6 +5,7 @@ import 'package:ina17_test/core/common/navigation.dart';
 import 'package:ina17_test/core/common/routes.dart';
 import 'package:ina17_test/core/theme/style.dart';
 import 'package:ina17_test/core/widget/button/default_button.dart';
+import 'package:ina17_test/feature/home/data/model/result_model.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,6 +15,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<ResultModel> listResult = [];
+  ResultModel? resultModel;
+  String? input;
+  String? result;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,11 +48,6 @@ class _HomePageState extends State<HomePage> {
             physics: const ClampingScrollPhysics(),
             children: [
               buildResultCalc(context),
-              buildResultCalc(context),
-              buildResultCalc(context),
-              buildResultCalc(context),
-              buildResultCalc(context),
-              buildResultCalc(context),
             ],
           ),
         ),
@@ -60,8 +61,69 @@ class _HomePageState extends State<HomePage> {
     var textTheme = Theme.of(context).textTheme;
     var colorScheme = Theme.of(context).colorScheme;
 
+    return listResult.isEmpty
+        ? Container(
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
+            ),
+            decoration: BoxDecoration(
+              color: colorScheme.onPrimary,
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                'Data still empty',
+                softWrap: true,
+                style: GoogleFonts.lato(
+                  textStyle: textTheme.labelLarge?.copyWith(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: colorScheme.secondary,
+                  ),
+                ),
+              ),
+            ),
+          )
+        : ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: listResult.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 24),
+            itemBuilder: (context, index) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                    child: Text(
+                      'Result ${index + 1} ',
+                      softWrap: true,
+                      style: GoogleFonts.lato(
+                        textStyle: textTheme.labelLarge?.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: colorScheme.secondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  resultCalc(listResult[index].input ?? '',
+                      listResult[index].result ?? ''),
+                ],
+              );
+            },
+          );
+  }
+
+  Widget resultCalc(String input, String result) {
+    var textTheme = Theme.of(context).textTheme;
+    var colorScheme = Theme.of(context).colorScheme;
+
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       padding: const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 24,
@@ -93,7 +155,7 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 child: Text(
                   // change to image to text
-                  '1 + 1',
+                  input,
                   softWrap: true,
                   style: GoogleFonts.lato(
                     textStyle: textTheme.labelLarge?.copyWith(
@@ -126,7 +188,7 @@ class _HomePageState extends State<HomePage> {
               ),
               Text(
                 // calc from image to text
-                '2',
+                result,
                 softWrap: true,
                 style: GoogleFonts.lato(
                   textStyle: textTheme.labelLarge?.copyWith(
@@ -161,10 +223,24 @@ class _HomePageState extends State<HomePage> {
               // nav keinput page
               // Navigator.pushNamed(context, Routes.takePhotoPage,
               //     arguments: data);
-              navigatorKey.currentState?.pushNamed(
+              navigatorKey.currentState
+                  ?.pushNamed(
                 Routes.takePhotoPage,
                 // arguments: data,
-              );
+              )
+                  .then((value) {
+                if (value != null) {
+                  resultModel = value as ResultModel?;
+                  if (resultModel != null) {
+                    Logger.print(resultModel?.input ?? 'kosong');
+                    Logger.print(resultModel?.result ?? 'kosong');
+
+                    setState(() {
+                      listResult.add(resultModel ?? ResultModel());
+                    });
+                  }
+                }
+              });
             },
             // showLoading: state is SelfSummarySaveLoading,
             label: 'Add Input',
