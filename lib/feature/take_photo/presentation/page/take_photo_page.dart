@@ -1,12 +1,16 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ina17_test/core/common/logger.dart';
 import 'package:ina17_test/core/widget/button/default_button.dart';
 import 'package:ina17_test/feature/home/data/model/result_model.dart';
+import 'package:ina17_test/feature/take_photo/bloc/take_photo_bloc.dart';
 
 class TakePhotoPage extends StatefulWidget {
   const TakePhotoPage({super.key});
@@ -20,7 +24,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
   String textFromImage = '';
   bool scanning = false;
   bool isTextConvertSuccess = false;
-  int calcResult = 0;
+  late TakePhotoBloc bloc;
 
   final ImagePicker _imagePicker = ImagePicker();
 
@@ -63,7 +67,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
 
         setState(() {
           textFromImage = recognizedText.text;
-          calculate(textFromImage);
+          bloc.add(TakePhotoRequest(value: textFromImage));
           scanning = false;
           isTextConvertSuccess = true;
         });
@@ -75,38 +79,14 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
       setState(() {
         isTextConvertSuccess = false;
         scanning = false;
-        textFromImage =
-            'error when process image to text, please try again with another image';
       });
     }
   }
 
-  // for now only support single calculation
-  // example : 1+1, 2-2, 3*3, 4:2
-  int calculate(String s) {
-    // Split string based on the operators
-    List<String> numbers = s.split(RegExp(r'[\+\-\*\/\x\:]'));
-
-    // Get the operator
-    String operator = s.replaceAll(RegExp(r'[0-9]'), '');
-
-    // Convert string numbers to integers
-    int num1 = int.parse(numbers[0]);
-    int num2 = int.parse(numbers[1]);
-
-    // Perform the operation based on the operator
-    switch (operator) {
-      case '+':
-        return calcResult = num1 + num2; // penambahan
-      case '-':
-        return calcResult = num1 - num2; // pengurangan
-      case '*' || 'x':
-        return calcResult = num1 * num2; // perkalian
-      case '/' || ':':
-        return calcResult = num1 ~/ num2; // pembagian Integer
-      default:
-        throw Exception('Invalid operator');
-    }
+  @override
+  void initState() {
+    bloc = TakePhotoBloc();
+    super.initState();
   }
 
   @override
@@ -129,7 +109,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
         if (isTextConvertSuccess == true) {
           ResultModel resultModel = ResultModel();
           resultModel.input = textFromImage;
-          resultModel.result = calcResult.toString();
+          resultModel.result = bloc.result.toString();
 
           Navigator.pop(context, resultModel);
         } else {
@@ -223,32 +203,52 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                   ),
                 ),
               ),
-              pickedImage == null
-                  ? Container()
-                  : isTextConvertSuccess == true
-                      ? Container(
-                          margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 24,
+              BlocConsumer(
+                bloc: bloc,
+                listener: (context, state) {
+                  if (state is TakePhotoError) {
+                    textFromImage = "Failed recognized";
+                    isTextConvertSuccess = false;
+                    scanning = false;
+                  }
+                },
+                builder: (context, state) {
+                  if (state is TakePhotoLoading) {
+                    return Container(
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.only(top: 16),
+                      child: const CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (state is TakePhotoError) {
+                    return Container(
+                      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 24,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.onPrimary,
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        state.errorMessage ?? "-",
+                        softWrap: true,
+                        style: GoogleFonts.lato(
+                          textStyle: textTheme.labelLarge?.copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: colorScheme.secondary,
                           ),
-                          decoration: BoxDecoration(
-                            color: colorScheme.onPrimary,
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '$textFromImage = $calcResult',
-                            softWrap: true,
-                            style: GoogleFonts.lato(
-                              textStyle: textTheme.labelLarge?.copyWith(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                                color: colorScheme.secondary,
-                              ),
-                            ),
-                          ),
-                        )
+                        ),
+                      ),
+                    );
+                  }
+
+                  return pickedImage == null
+                      ? Container()
                       : Container(
                           margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                           padding: const EdgeInsets.symmetric(
@@ -261,7 +261,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            textFromImage,
+                            '$textFromImage = ${bloc.result}',
                             softWrap: true,
                             style: GoogleFonts.lato(
                               textStyle: textTheme.labelLarge?.copyWith(
@@ -271,7 +271,9 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                               ),
                             ),
                           ),
-                        ),
+                        );
+                },
+              ),
             ],
           ),
         ),
@@ -299,6 +301,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                   onPressed: () {
                     getImage(ImageSource.camera);
                   },
+                  // showLoading: state is SelfSummarySaveLoading,
                   label: 'Take a Picture',
                   height: 40,
                 ),
