@@ -56,6 +56,11 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
         final RecognizedText recognizedText =
             await textRecognizer.processImage(inputImage);
 
+        // note: if using camera still always failed, but if using image from galery sometimes it success,
+        // here the success image when using galery :
+        // https://www.google.com/imgres?q=2%2B2&imgurl=https%3A%2F%2Fwww.islingtontribune.co.uk%2Fmedia%2F2023%2F09%2F2-2-two-arsenal.jpg&imgrefurl=https%3A%2F%2Fwww.islingtontribune.co.uk%2Farticle%2Farsenal-frustrated-by-bayern-in-close-encounter&docid=92XjSd0wh8hP1M&tbnid=D1xnjl9h-gbMtM&vet=12ahUKEwj_jYqI9LKIAxV5e2wGHZLCDTcQM3oECEcQAA..i&w=1600&h=900&hcb=2&ved=2ahUKEwj_jYqI9LKIAxV5e2wGHZLCDTcQM3oECEcQAA
+        // https://www.google.com/imgres?q=2%2B2&imgurl=https%3A%2F%2Fwww.shanghaireunited.com%2Fwp-content%2Fuploads%2F2015%2F01%2Fdraw-score-640x360.jpg&imgrefurl=https%3A%2F%2Fwww.shanghaireunited.com%2F3u-anzacs-draw-2-2%2F&docid=mJFPApMiBOFBUM&tbnid=GSWWKxjO8K1mbM&vet=12ahUKEwj_jYqI9LKIAxV5e2wGHZLCDTcQM3oECGYQAA..i&w=640&h=360&hcb=2&ved=2ahUKEwj_jYqI9LKIAxV5e2wGHZLCDTcQM3oECGYQAA
+
         setState(() {
           textFromImage = recognizedText.text;
           calculate(textFromImage);
@@ -294,8 +299,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                   onPressed: () {
                     getImage(ImageSource.camera);
                   },
-                  // showLoading: state is SelfSummarySaveLoading,
-                  label: 'Take a picture',
+                  label: 'Take a Picture',
                   height: 40,
                 ),
               ),
@@ -306,7 +310,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                     getImage(ImageSource.gallery);
                   },
                   // showLoading: state is SelfSummarySaveLoading,
-                  label: 'Select from galery',
+                  label: 'Select from Galery',
                   height: 40,
                 ),
               ),

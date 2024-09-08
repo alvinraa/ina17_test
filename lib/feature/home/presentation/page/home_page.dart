@@ -215,36 +215,50 @@ class _HomePageState extends State<HomePage> {
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: DefaultButton(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            onPressed: () {
-              // go to add input page
-              Logger.print('go to add_input_page');
-              // nav keinput page
-              // Navigator.pushNamed(context, Routes.takePhotoPage,
-              //     arguments: data);
-              navigatorKey.currentState
-                  ?.pushNamed(
-                Routes.takePhotoPage,
-                // arguments: data,
-              )
-                  .then((value) {
-                if (value != null) {
-                  resultModel = value as ResultModel?;
-                  if (resultModel != null) {
-                    Logger.print(resultModel?.input ?? 'kosong');
-                    Logger.print(resultModel?.result ?? 'kosong');
-
+          child: Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: DefaultButton(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  onPressed: () {
+                    Logger.print('reset result');
                     setState(() {
-                      listResult.add(resultModel ?? ResultModel());
+                      listResult = [];
                     });
-                  }
-                }
-              });
-            },
-            // showLoading: state is SelfSummarySaveLoading,
-            label: 'Add Input',
-            height: 40,
+                  },
+                  label: 'Reset',
+                  height: 40,
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: DefaultButton(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  onPressed: () {
+                    // go to add input page
+                    Logger.print('go to add_input_page');
+                    navigatorKey.currentState
+                        ?.pushNamed(
+                      Routes.takePhotoPage,
+                      // arguments: data,
+                    )
+                        .then((value) {
+                      if (value != null) {
+                        resultModel = value as ResultModel?;
+                        if (resultModel != null) {
+                          setState(() {
+                            listResult.add(resultModel ?? ResultModel());
+                          });
+                        }
+                      }
+                    });
+                  },
+                  label: 'Add Input',
+                  height: 40,
+                ),
+              ),
+            ],
           ),
         ),
       ),
